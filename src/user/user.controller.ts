@@ -1,12 +1,18 @@
-import { Body, Controller, Post, Get, Put, Patch, Delete, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Post, Get, Put, Patch, Delete, UseInterceptors, UseGuards } from "@nestjs/common";
 import { CreateUserDTO } from "./dto/create-user-dto";
 import { UpdateUserDTO } from "./dto/update-user-dto";
 import { UpdatePatchUserDTO } from "./dto/update-patch-user-dto";
 import { UserService } from "./user.service";
 import { ParamId } from "src/decorators/param-id.decorator";
+import { Roles } from "src/decorators/roles.decorator";
+import { Role } from "src/enums/role.enum";
+import { AuthGuard } from "src/guards/auth.guard";
+import { RoleGuard } from "src/guards/role.guard";
 //import { LogInterceptor } from "src/interceptors/log.interceptor";
 
-//@UseInterceptors(LogInterceptor)
+@UseGuards(AuthGuard, RoleGuard)
+@Roles(Role.Admin)
+// @UseInterceptors(LogInterceptor)
 @Controller('users')
 export class UserController {
 
@@ -24,22 +30,22 @@ export class UserController {
     }
 
     @Get(':id')
-    async show(@ParamId() id : number) {
+    async show(@ParamId() id: number) {
         return this.userService.show(id);
     }
 
     @Put(':id')
-    async update(@ParamId() id : number, @Body() data: UpdateUserDTO) {
+    async update(@ParamId() id: number, @Body() data: UpdateUserDTO) {
         return this.userService.update(id, data);
     }
 
     @Patch(':id')
-    async updatePartial(@ParamId() id : number, @Body() data: UpdatePatchUserDTO) {
+    async updatePartial(@ParamId() id: number, @Body() data: UpdatePatchUserDTO) {
         return this.userService.updatePartial(id, data);
     }
 
     @Delete(':id')
-    async delete(@ParamId() id : number) {
+    async delete(@ParamId() id: number) {
         return this.userService.delete(id);
     }
 }

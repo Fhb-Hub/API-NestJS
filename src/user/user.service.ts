@@ -9,13 +9,14 @@ export class UserService {
 
     constructor(private readonly prisma: PrismaService) { }
 
-    async create({ name, birthday, email, password }: CreateUserDTO) {
+    async create({ name, birthday, email, password, role }: CreateUserDTO) {
         return this.prisma.user.create({
             data: {
                 name,
                 birthday: birthday ? new Date(birthday) : null,
                 email,
-                password
+                password,
+                role
             },
         })
     }
@@ -32,7 +33,7 @@ export class UserService {
         })
     }
 
-    async update(id: number, { name, birthday, email, password }: UpdateUserDTO) {
+    async update(id: number, { name, birthday, email, password, role }: UpdateUserDTO) {
         await this.exists(id);
 
         return this.prisma.user.update({
@@ -40,13 +41,14 @@ export class UserService {
                 name,
                 birthday: birthday ? new Date(birthday) : null,
                 email,
-                password
+                password,
+                role
             },
             where: { id }
         })
     }
 
-    async updatePartial(id: number, { name, birthday, email, password }: UpdatePatchUserDTO) {
+    async updatePartial(id: number, { name, birthday, email, password, role }: UpdatePatchUserDTO) {
         await this.exists(id);
 
         const data: any = {}
@@ -57,6 +59,10 @@ export class UserService {
 
         if (birthday) {
             data.birthday = new Date(birthday)
+        }
+
+        if (role) {
+            data.role = role
         }
 
         if (email) {
