@@ -1,9 +1,11 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthRegisterDTO } from './dto/auth-register.dto';
 import { UserService } from 'src/user/user.service';
+import * as bcrypt from 'bcrypt';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Injectable()
 export class AuthService {
@@ -56,13 +58,10 @@ export class AuthService {
 
     async login(email: string, password: string) {
         const user = await this.prisma.user.findFirst({
-            where: {
-                email,
-                password
-            }
+            where: { email }
         })
 
-        if (!user) {
+        if (!user || !await bcrypt.compare(password, user.password)) {
             throw new UnauthorizedException('Incorrect email or password!');
         }
 
@@ -98,4 +97,5 @@ export class AuthService {
         const user = await this.userService.create(data);
         return this.createToken(user);
     }
+
 }
