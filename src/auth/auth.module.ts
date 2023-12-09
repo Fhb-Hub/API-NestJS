@@ -10,8 +10,7 @@ import { AuthService } from "./auth.service";
         forwardRef(() => UserModule),
         PrismaModule,
         JwtModule.register({
-            // Atenção aos scapes ("/") e aos caracteres aspas simples, aspas duplas e crases
-            secret: 'v7IKN@XTQ*39F&jqv*b)TwR(M@4nMDKW'
+            secret: process.env.JWT_SECRET
         })],
     controllers: [AuthController],
     providers: [AuthService],
