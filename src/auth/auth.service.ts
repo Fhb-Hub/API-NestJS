@@ -5,7 +5,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthRegisterDTO } from './dto/auth-register.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { FileService } from 'src/file/file.service';
+import { join } from 'path';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +17,9 @@ export class AuthService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly jwtService: JwtService,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly fileService: FileService
+
     ) { }
 
     createToken(user: User) {
@@ -98,4 +101,15 @@ export class AuthService {
         return this.createToken(user);
     }
 
+    async uploadMyFile(saveFolder: string, userId: number, file: Express.Multer.File) {
+        try {
+            const saveDirectory = join(__dirname, '..', '..', 'storage', userId.toString(), saveFolder)
+            file.path = this.fileService.generateSavePath(saveDirectory, file.originalname)
+
+            await this.fileService.upload(file)
+            return { success: true }
+        } catch (err) {
+           throw new BadRequestException(err)
+        }
+    }
 }

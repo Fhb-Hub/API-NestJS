@@ -8,7 +8,9 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
 
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+    ) { }
 
     async create({ name, birthday, email, password, role }: CreateUserDTO) {
         return this.prisma.user.create({
