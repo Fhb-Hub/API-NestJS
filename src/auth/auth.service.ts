@@ -103,7 +103,7 @@ export class AuthService {
 
     async uploadMyFile(saveFolder: string, userId: number, file: Express.Multer.File) {
         try {
-            const saveDirectory = join(__dirname, '..', '..', 'storage', userId.toString(), saveFolder)
+            const saveDirectory = join(process.env.FILE_STORAGE , userId.toString(), saveFolder)
             file.path = this.fileService.generateSavePath(saveDirectory, file.originalname)
 
             await this.fileService.upload(file)

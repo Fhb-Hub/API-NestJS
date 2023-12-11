@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, FileTypeValidator, ParseFilePipe, Post, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthLoginDTO } from "./dto/auth-login.dto";
 import { AuthRegisterDTO } from "./dto/auth-register.dto";
 import { AuthForgetDTO } from "./dto/auth-forget.dto";
@@ -44,17 +44,21 @@ export class AuthController {
     @UseGuards(AuthGuard)
     @UseInterceptors(FileInterceptor('photo'))
     @Post('photo')
-    async uploadPhoto(@User() user, @UploadedFile() photo: Express.Multer.File) {
-        this.authService.uploadMyFile('photos', user.id, photo)
+    async uploadPhoto(
+        @User('id') userId,
+        @UploadedFile(new ParseFilePipe({
+            validators: [new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ })]
+        })) photo: Express.Multer.File) {
+        this.authService.uploadMyFile('photos', userId, photo)
         return { success: true }
     }
 
     @UseGuards(AuthGuard)
     @UseInterceptors(FilesInterceptor('documents'))
     @Post('documents')
-    async uploadDocuments(@User() user, @UploadedFiles() documents: Express.Multer.File[]) {
+    async uploadDocuments(@User('id') userId, @UploadedFiles() documents: Express.Multer.File[]) {
         documents.forEach(async document => {
-            this.authService.uploadMyFile('documents', user.id, document)
+            this.authService.uploadMyFile('documents', userId, document)
         })
         return { success: true }
     }
