@@ -1,4 +1,4 @@
-import { Body, Controller, FileTypeValidator, ParseFilePipe, Post, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, FileTypeValidator, MaxFileSizeValidator, ParseFilePipe, Post, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthLoginDTO } from "./dto/auth-login.dto";
 import { AuthRegisterDTO } from "./dto/auth-register.dto";
 import { AuthForgetDTO } from "./dto/auth-forget.dto";
@@ -47,7 +47,10 @@ export class AuthController {
     async uploadPhoto(
         @User('id') userId,
         @UploadedFile(new ParseFilePipe({
-            validators: [new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ })]
+            validators: [
+                new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
+                new MaxFileSizeValidator({ maxSize: 1024 * 500})
+            ]
         })) photo: Express.Multer.File) {
         this.authService.uploadMyFile('photos', userId, photo)
         return { success: true }
