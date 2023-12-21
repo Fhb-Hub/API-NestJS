@@ -22,7 +22,6 @@ export class FileService {
             fileName = fileName.substring(0, indexOfSearchString);
         }
 
-        console.log(fileName)
         this.createDirectoryIfNotExists(saveDirectory)
 
         let counter = 0;

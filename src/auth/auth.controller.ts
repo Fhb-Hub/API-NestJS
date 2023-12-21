@@ -7,6 +7,7 @@ import { AuthService } from "./auth.service";
 import { AuthGuard } from "src/guards/auth.guard";
 import { User } from "src/decorators/user.decorator";
 import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
+import { join } from "path";
 
 @Controller('auth')
 export class AuthController {
@@ -49,7 +50,7 @@ export class AuthController {
         @UploadedFile(new ParseFilePipe({
             validators: [
                 new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
-                new MaxFileSizeValidator({ maxSize: 1024 * 500})
+                new MaxFileSizeValidator({ maxSize: 1024 * 500 })
             ]
         })) photo: Express.Multer.File) {
         this.authService.uploadMyFile('photos', userId, photo)
@@ -57,28 +58,31 @@ export class AuthController {
     }
 
     @UseGuards(AuthGuard)
-    @UseInterceptors(FilesInterceptor('documents'))
-    @Post('documents')
-    async uploadDocuments(@User('id') userId, @UploadedFiles() documents: Express.Multer.File[]) {
-        documents.forEach(async document => {
-            this.authService.uploadMyFile('documents', userId, document)
+    @UseInterceptors(FilesInterceptor('archives'))
+    @Post('archives')
+    async uploadArchives(@User('id') userId, @UploadedFiles() archives: Express.Multer.File[]) {
+        archives.forEach(async archive => {
+            this.authService.uploadMyFile('archives', userId, archive)
         })
         return { success: true }
     }
+
 
     @UseGuards(AuthGuard)
     @UseInterceptors(FileFieldsInterceptor([
-        { name: 'photo', maxCount: 1 },
-        { name: 'documents', maxCount: 5 },
+        { name: 'personal', maxCount: 5 },
+        { name: 'receipt', maxCount: 1 },
     ]))
-    @Post('files')
-    async uploadFiles(@User('id') userId, @UploadedFiles() files: { photo: Express.Multer.File, documents: Express.Multer.File[] }) {
-        await this.authService.uploadMyFile('photos', userId, files.photo[0])
+    @Post('documents')
+    async uploadDocuments(@User('id') userId, @UploadedFiles() documents: { personal: Express.Multer.File[], receipt: Express.Multer.File }) {
 
-        files.documents.forEach(async document => {
-            this.authService.uploadMyFile('documents', userId, document)
+        this.authService.uploadMyFile(join('documents', 'receipt'), userId, documents.receipt[0]);
+
+        documents.personal.forEach(async document => {
+            this.authService.uploadMyFile(join('documents', 'personal'), userId, document);
         })
 
         return { success: true }
     }
+
 }

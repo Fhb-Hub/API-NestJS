@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { FileService } from 'src/file/file.service';
 import { join } from 'path';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
@@ -16,10 +17,10 @@ export class AuthService {
 
     constructor(
         private readonly prisma: PrismaService,
+        private readonly mailer: MailerService,
         private readonly jwtService: JwtService,
         private readonly userService: UserService,
         private readonly fileService: FileService
-
     ) { }
 
     createToken(user: User) {
@@ -82,6 +83,25 @@ export class AuthService {
             throw new UnauthorizedException('Email not found!');
         }
 
+        const token = this.jwtService.sign({
+            user: user.id,
+        }, {
+            expiresIn: "10 minutes",
+            subject: String(user.id),
+            issuer: 'forget',
+            audience: 'users'
+        })
+
+        await this.mailer.sendMail({
+            subject: 'Password recovery',
+            to: user.email,
+            template: 'forget',
+            context: {
+                name: user.name,
+                token
+            }
+        })
+
         return true;
     }
 
@@ -103,13 +123,13 @@ export class AuthService {
 
     async uploadMyFile(saveFolder: string, userId: number, file: Express.Multer.File) {
         try {
-            const saveDirectory = join(process.env.FILE_STORAGE , userId.toString(), saveFolder)
+            const saveDirectory = join(process.env.FILE_STORAGE, userId.toString(), saveFolder)
             file.path = this.fileService.generateSavePath(saveDirectory, file.originalname)
 
             await this.fileService.upload(file)
             return { success: true }
         } catch (err) {
-           throw new BadRequestException(err)
+            throw new BadRequestException(err)
         }
     }
 }

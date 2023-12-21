@@ -1,0 +1,27 @@
+html
+  head
+    title Password Recovery
+
+  body
+    h1 Password Recovery
+    p Dear #{name}, you have requested a password reset. Please click the link below to reset your password:
+
+    p
+      a(href="#{link}", target="_blank") #{link}
+
+    p
+      | If you did not request a password reset, please ignore this email.
+
+    p
+      | This link is valid for a limited time.
+
+    p
+      | If you encounter any issues, please contact us at support@example.com.
+
+    p
+      | Thank you,
+      br
+      | Support Team
+
+  footer
+    p © 2023 My Company. All rights reserved.
